@@ -30,8 +30,7 @@ def main():
     spark = (
         SparkSession.builder
         .appName("leitura-postgres")
-        # Se necessário, descomente e ajuste o caminho do driver JDBC:
-        # .config("spark.jars", "/caminho/para/postgresql-42.7.4.jar")
+        .config("spark.jars", "C:/Clones/Projeto db/projeto-laboratorio-db/jars/postgresql-42.7.13.jar")
         .getOrCreate()
     )
 
