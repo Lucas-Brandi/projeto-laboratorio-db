@@ -1,10 +1,111 @@
--- Script de criação de schema do banco.
--- Rode este arquivo contra o banco do Aiven (via psql, DBeaver, ou o script
--- Python init_db.py) sempre que precisar recriar a estrutura do zero.
+-- public.categories definition
 
--- Exemplo de tabela — ajustem para o schema real do trabalho.
-CREATE TABLE IF NOT EXISTS exemplo (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL,
-    criado_em TIMESTAMP NOT NULL DEFAULT NOW()
+-- Drop table
+
+-- DROP TABLE public.categories;
+
+CREATE TABLE public.categories (
+	category_id serial4 NOT NULL,
+	category_name varchar(100) NULL,
+	CONSTRAINT categories_pkey PRIMARY KEY (category_id)
+);
+
+
+-- public.customers definition
+
+-- Drop table
+
+-- DROP TABLE public.customers;
+
+CREATE TABLE public.customers (
+	customer_id serial4 NOT NULL,
+	customer_name varchar(100) NULL,
+	email varchar(100) NULL,
+	state varchar(2) NULL,
+	CONSTRAINT customers_pkey PRIMARY KEY (customer_id)
+);
+
+
+-- public.sellers definition
+
+-- Drop table
+
+-- DROP TABLE public.sellers;
+
+CREATE TABLE public.sellers (
+	seller_id serial4 NOT NULL,
+	seller_name varchar(100) NULL,
+	email varchar(100) NULL,
+	state varchar(2) NULL,
+	tx_commission int4 NULL,
+	CONSTRAINT sellers_pkey PRIMARY KEY (seller_id)
+);
+
+
+-- public.suppliers definition
+
+-- Drop table
+
+-- DROP TABLE public.suppliers;
+
+CREATE TABLE public.suppliers (
+	supplier_id serial4 NOT NULL,
+	supplier_name varchar(100) NULL,
+	email varchar(100) NULL,
+	state varchar(50) NULL,
+	CONSTRAINT suppliers_pkey PRIMARY KEY (supplier_id)
+);
+
+
+-- public.products definition
+
+-- Drop table
+
+-- DROP TABLE public.products;
+
+CREATE TABLE public.products (
+	product_id serial4 NOT NULL,
+	product_name varchar(100) NULL,
+	category_id int4 NULL,
+	price numeric NULL,
+	supplier_id int4 NULL,
+	CONSTRAINT products_pkey PRIMARY KEY (product_id),
+	CONSTRAINT products_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.categories(category_id),
+	CONSTRAINT products_supplier_id_fkey FOREIGN KEY (supplier_id) REFERENCES public.suppliers(supplier_id)
+);
+
+
+-- public.sales definition
+
+-- Drop table
+
+-- DROP TABLE public.sales;
+
+CREATE TABLE public.sales (
+	sales_id serial4 NOT NULL,
+	"date" date NULL,
+	customer_id int4 NULL,
+	seller_id int4 NULL,
+	total_price numeric NULL,
+	CONSTRAINT sales_pkey PRIMARY KEY (sales_id),
+	CONSTRAINT sales_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.customers(customer_id),
+	CONSTRAINT sales_seller_id_fkey FOREIGN KEY (seller_id) REFERENCES public.sellers(seller_id)
+);
+
+
+-- public.sales_items definition
+
+-- Drop table
+
+-- DROP TABLE public.sales_items;
+
+CREATE TABLE public.sales_items (
+	item_id serial4 NOT NULL,
+	sales_id int4 NOT NULL,
+	product_id int4 NULL,
+	quantity int4 NULL,
+	price numeric NULL,
+	CONSTRAINT sales_items_pkey PRIMARY KEY (item_id, sales_id),
+	CONSTRAINT sales_items_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(product_id),
+	CONSTRAINT sales_items_sales_id_fkey FOREIGN KEY (sales_id) REFERENCES public.sales(sales_id)
 );
