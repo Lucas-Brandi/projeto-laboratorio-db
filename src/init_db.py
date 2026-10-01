@@ -1,9 +1,12 @@
 """
 Roda o(s) script(s) SQL em sql/ contra o banco configurado no .env.
 Uso:
-    python src/init_db.py
+    python src/init_db.py                          # roda todos os .sql de sql/
+    python src/init_db.py sql/003_create_dw.sql    # roda só o(s) arquivo(s) indicado(s)
 """
+
 import os
+import sys
 from pathlib import Path
 
 import psycopg2
@@ -26,7 +29,10 @@ def get_connection():
 
 
 def main():
-    sql_files = sorted(SQL_DIR.glob("*.sql"))
+    if len(sys.argv) > 1:
+        sql_files = [Path(arg) for arg in sys.argv[1:]]
+    else:
+        sql_files = sorted(SQL_DIR.glob("*.sql"))
     if not sql_files:
         print("Nenhum arquivo .sql encontrado em sql/.")
         return
