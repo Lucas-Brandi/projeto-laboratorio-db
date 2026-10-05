@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
@@ -8,6 +9,7 @@ from sqlalchemy.engine import URL
 
 load_dotenv()
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ============================================================
 # CONEXÃO COM O BANCO
@@ -64,7 +66,7 @@ fig_produtos = px.bar(
 )
 
 fig_produtos.update_layout(
-    yaxis={"categoryorder": "total ascending"}
+    yaxis={"categoryorder": "total ascending"},
 )
 
 
@@ -96,6 +98,8 @@ fig_categorias = px.bar(
     },
 )
 
+fig_categorias.update_yaxes(tickprefix="R$ ", tickformat=",.2f")
+
 
 # ============================================================
 # GRÁFICO 3 - RECEITA AO LONGO DO TEMPO
@@ -104,22 +108,19 @@ fig_categorias = px.bar(
 query_tempo = """
 SELECT
     d.year,
-    d.quarter,
     d.month,
     SUM(f.line_total) AS revenue
 FROM dw_techpop.fact_sales_items f
 JOIN dw_techpop.dim_date d
     ON d.date_key = f.date_key
-GROUP BY d.year, d.quarter, d.month
-ORDER BY d.year, d.quarter, d.month;
+GROUP BY d.year, d.month
+ORDER BY d.year, d.month;
 """
 
 df_tempo = pd.read_sql(query_tempo, engine)
 
-df_tempo["periodo"] = (
-    df_tempo["year"].astype(str)
-    + "-"
-    + df_tempo["month"].astype(str).str.zfill(2)
+df_tempo["periodo"] = pd.to_datetime(
+    dict(year=df_tempo["year"], month=df_tempo["month"], day=1)
 )
 
 fig_tempo = px.line(
@@ -133,6 +134,9 @@ fig_tempo = px.line(
         "revenue": "Receita",
     },
 )
+
+fig_tempo.update_xaxes(tickformat="%m/%Y")
+fig_tempo.update_yaxes(tickprefix="R$ ", tickformat=",.2f")
 
 
 # ============================================================
@@ -162,6 +166,8 @@ fig_vendedores = px.bar(
         "revenue": "Receita",
     },
 )
+
+fig_vendedores.update_yaxes(tickprefix="R$ ", tickformat=",.2f")
 
 
 # ============================================================
@@ -202,6 +208,10 @@ dashboard = f"""
     <title>Dashboard de Vendas</title>
 
     <style>
+        * {{
+            box-sizing: border-box;
+        }}
+
         body {{
             font-family: Arial, sans-serif;
             margin: 0;
@@ -221,6 +231,16 @@ dashboard = f"""
             padding: 20px;
             margin-bottom: 30px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }}
+
+        @media (max-width: 600px) {{
+            body {{
+                padding: 16px;
+            }}
+
+            .grafico {{
+                padding: 12px;
+            }}
         }}
     </style>
 </head>
@@ -267,8 +287,9 @@ dashboard = f"""
 # SALVAR DASHBOARD
 # ============================================================
 
-with open("dashboard.html", "w", encoding="utf-8") as arquivo:
+with (BASE_DIR / "dashboard.html").open("w", encoding="utf-8") as arquivo:
     arquivo.write(dashboard)
 
 print("Dashboard criado com sucesso!")
-print("Arquivo: dashboard.html")
+print(f"Arquivo: {BASE_DIR / 'dashboard.html'}")
+engine.dispose()

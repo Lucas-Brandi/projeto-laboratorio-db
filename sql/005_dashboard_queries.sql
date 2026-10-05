@@ -30,11 +30,11 @@ FROM dw_techpop.dim_customer
 GROUP BY state
 ORDER BY customers DESC, state;
 
-SELECT d.year, d.quarter, d.month, SUM(f.line_total) AS revenue
+SELECT d.year, d.month, SUM(f.line_total) AS revenue
 FROM dw_techpop.fact_sales_items f
 JOIN dw_techpop.dim_date d ON d.date_key = f.date_key
-GROUP BY d.year, d.quarter, d.month
-ORDER BY d.year, d.quarter, d.month;
+GROUP BY d.year, d.month
+ORDER BY d.year, d.month;
 
 SELECT v.category_name, AVG(v.sale_total) AS average_ticket
 FROM (
